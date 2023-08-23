@@ -1,0 +1,79 @@
+#include <Arduino.h>
+
+#include <bat_sound.hpp>
+#include <couvercle.hpp>
+
+Bat_Sound *bouche = new Bat_Sound(12, 13); // trig, echo
+Couvercle couv(16, 17);
+
+long present = 0;
+//int led = 5; int sensor = 2; int state = LOW; int val = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+
+  bouche->begin(); couv.begin();
+  //pinMode(led, OUTPUT);
+  //pinMode(sensor, INPUT);
+  present = millis();
+}
+void loop()
+{  
+  if(millis() - present >= 100)
+  {
+    // Avant de detecter la dictance on s'assure que la poubelle est bien fermee
+
+    if(!couv.getStateCouvercle()) // Si c'est pas ferme
+    {
+      goto pas_calcul_distance;
+    }
+    // Sinon on calcul la distance
+    // Puis on detecte maintemnant la distance
+    Serial.print("Distance : "); Serial.println(bouche->detect_obstacle_distance());
+
+    if(bouche->dist_limit())
+    {
+      // On vas faire un action
+
+      // Envoyer un msg Par exemple
+      // On envoie les info de la poubelle
+
+      // Faire clignoter les Leds externes
+
+      // Envoyer un code rouge et peut etre empecher l'ouverture
+    }
+    // On va envooie les informatiion de la poubelle
+    // Pas de code rouge
+
+
+
+    present= millis();
+  }
+  /*int val = digitalRead(sensor);
+  if(val == HIGH)
+  {
+    digitalWrite(led, HIGH);
+    delay(100);
+    if(state == LOW)
+    {
+      Serial.println("Detection de presence");
+      state = HIGH;
+    }
+    else{
+
+      digitalWrite(led, LOW);
+      delay(200);
+      if(state == HIGH)
+      {
+        Serial.println("Plus de detection !");
+        state = LOW;
+      }
+    }
+  }*/
+
+  pas_calcul_distance :
+    couv.voir_ouverture();
+    
+
+}

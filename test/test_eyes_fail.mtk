@@ -1,0 +1,31 @@
+#include <Arduino.h>
+
+#include <eyes.hpp>
+
+Eyes *yeux = new Eyes(2, 5); long present =0;
+
+void setup()
+{
+  yeux->begin();
+
+  present = millis();
+}
+
+void loop()
+{
+  yeux->voir_mouvement();
+  if(millis() - present >=2500)
+  {
+    if(yeux->getState_out() == HIGH)
+    {
+      //on effectue une action
+      yeux->setPinOut(HIGH);
+    }
+    else if(yeux->getState_out() == LOW)
+    {
+      yeux->setPinOut(LOW);
+    }
+    present = millis();
+  }
+
+}

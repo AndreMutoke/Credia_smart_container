@@ -1,0 +1,49 @@
+#include <Arduino.h>
+
+#include <bat_sound.hpp>
+
+Bat_Sound *bouche = new Bat_Sound(12, 13); // trig, echo
+long present = 0;
+int led = 5; int sensor = 2; int state = LOW; int val = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+
+  bouche->begin();
+  pinMode(led, OUTPUT);
+  pinMode(sensor, INPUT);
+  present = millis();
+}
+void loop()
+{  
+  if(millis() - present >= 2000)
+  {
+    Serial.print("Distance : "); Serial.println(bouche->detect_obstacle_distance());
+  
+
+
+    present= millis();
+  }
+  int val = digitalRead(sensor);
+  if(val == HIGH)
+  {
+    digitalWrite(led, HIGH);
+    delay(100);
+    if(state == LOW)
+    {
+      Serial.println("Detection de presence");
+      state = HIGH;
+    }
+    else{
+
+      digitalWrite(led, LOW);
+      delay(200);
+      if(state == HIGH)
+      {
+        Serial.println("Plus de detection !");
+        state = LOW;
+      }
+    }
+  }
+}
