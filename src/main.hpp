@@ -31,4 +31,18 @@ int moyenneNiveau(int niveau[])
     return resultat;
 }
 
+//SI LA DETECTION PREND BRUSQUEMENT(DETECTION D'UNE PERSONNE, ALORS CALCUL DE LA MOYENNE AVEC LE NOMBRE D'ELEMENTS DISPO DANS LE TABLEAU)
+int moyenneNiveau(int niveau[], int taille)
+{
+    int resultat = 0;
+
+    for(int i=0; i< taille; ++i)
+    {
+        resultat += niveau[i];
+    }
+    resultat /= taille;
+
+    return resultat;
+}
+
 #endif // MAIN_HPP
