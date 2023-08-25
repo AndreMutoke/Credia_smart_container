@@ -4,7 +4,11 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-
+//=====ACTION SUR LE COUVERCLE=====
+#define CLOSE 0x00
+#define OPEN 0x01
+#define MAX_ANGLE 135
+#define MIN_ANGLE 0
 class Couvercle
 {
 public :
@@ -15,10 +19,17 @@ public :
         return this->ouverture;
     }
     void ouvrir_couvercle();
+
     void fermer_couvercle();
 
     void voir_ouverture();
     void voir_fermeture();
+
+//========NEW_METHODE============
+    bool ouvrir_couvercle(bool operation);
+    bool fermer_couvercle(bool operation);
+    void voyant_couvercle(bool statePinCtrl);
+    int get_pos_couvercle();
 
 
 private :

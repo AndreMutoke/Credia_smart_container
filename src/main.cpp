@@ -11,9 +11,19 @@ long present = 0;  long present2=0; // Pour gerer le temps du programme
 int sensorInfrared = 14; int detection; // Pour detecter la presence des personnes
 
 
-int moyenne =0; // On envoie une moyenne de 30 detection de niveau
+
+int moyenne = 0; // On envoie une moyenne de 30 detection de niveau
+
 int pos = 0; // pour gerer le tableau des moyennes
 
+//=================NEW===================
+bool openingCave = false; //COUVERCLE EN COURS D'OUVERTURE
+bool closingCave = false; // COUVERCLE EN COURS DE FERMETURE
+unsigned int delayCave[] = {50, 15000};
+unsigned short delayActionCouvercle = 10; //delai avant chaque action sur le couvercle(incrementation ou de crementation de position de ce dernier )
+unsigned long currentTimeActionCouvercle = 0; //temps courant lors de l'ouverture ou fermeture de la poubelle
+//delayCave[0]: delai avant reverification de l'etat du couvercle
+//delayCave[1]: delai d'ouverture du couvercle
 
 void setup(){
   // =======================  On initialise tout les necessaire =========================
@@ -29,20 +39,20 @@ void setup(){
 
 }
 void loop(){
-
-  if((millis() - present )  >= 50)
-  {
-    // chaque 0,05 seconde on verifie si la poubelle est ouverte
-    if(couv.getStateCouvercle()) // True : La poubelle est ouverte;      False :  La poubelle est fermee
-    {
-      // ============================== Ici la poubelle est ouverte ====================================
-
-      // Envoie le niveau de la poubelle a l'utilisateur le dernier etat de la poubelle
-      Serial.println("Envoie le niveau de la poubelle ouverte a l'utilisateur le dernier etat de la poubelle");
-      // sendMoyenne(moyenne);
+  //SI LE COUVERCLE EST OUVERT ET QU'IL N'EST PAS EN COURS DE FERMETURE, ALORS ON VERIFIE SI LE DELAI D'OUVERTURE EST EPUISE
+  if(couv.getStateCouvercle() && !closingCave){
+    if((millis() - present )  >= delayCave[1]){
+      closingCave = !couv.fermer_couvercle(true);
+      present = millis();
     }
-    else {
-      // La poubelle est fermee
+  }
+    //=====================================================================================================================================
+    //SI LE COUVERCLE EST FERME ET QU'IL N'EST PAS EN COURS D'OUVERTURE, ALORS ON LIT LE NIVEAU DU CONTENU ET LE DETECTEUR DE PROXIMITE
+
+  if(!couv.getStateCouvercle() && !openingCave){
+    if((millis() - present2 )  >= delayCave[0])
+    {
+
       Serial.println("La poubelle est fermee");
       if(pos < MAX_LEVELMOYENNE)
       {
@@ -53,7 +63,7 @@ void loop(){
       {
         pos = 0;
         // On envoie la moyenne des niiveua a l'utilisateur
-        Serial.println("On envoie la moyenne des niiveua a l'utilisateur");
+        Serial.println("On envoie la moyenne du niveau a l'utilisateur");
         moyenne = moyenneNiveau(niveauPoubelle);  initNiveau(niveauPoubelle);
         
         // sendMoyenne(moyenne);
@@ -63,34 +73,39 @@ void loop(){
           // Envoie du code rouge
           
         }
-        
       }
-
-      // ===================== On verifie aussi qui se trouve devant la poubelle ==============================
-      if((millis() - present2 )  >= 50)
+      //READ_SENSORS();//FONCTION QUI PERMETTRA DE LIRE L'ETAT DES TOUS LES CAPTEURS EN PRENANT EN COMPTE SI LA POUBELLE EST OUVERTE OU NON
+      detection = digitalRead(sensorInfrared);
+      if(detection == 1)
       {
-        // On verifie chaque 0,05 secondes les personne est  devant
-        Serial.println("On verifie chaque 0,05 secondes les personne est  devant");
-        detection = digitalRead(sensorInfrared);
-        if(detection == 1)
-        {
-          // Une personne est detectee
-          Serial.println("Une personne est detectee");
-          // On ouvre la poubelle puis on la ferme apres 7,5 secondes
-          couv.ouvrir_couvercle();
-          delay(7500);
-          couv.fermer_couvercle();
-
-        }
-        present2 = millis();
-        
+        openingCave = !(couv.ouvrir_couvercle(true));
+        currentTimeActionCouvercle = millis();
       }
-      // +++++++++++++++++++ DHT DETECTION D'HUMIDITE ++++++++++++++++++++++++
-
-      // ++++++++++++++++++++++ DETECTION DE TEMPERATURE ++++++++++++++++++++++++      
-      
+      present2 = millis();
     }
-    present = millis();
+
+    //===================LOGIQUE D'OUVERTURE AVEC MILLIS==================
+    if(openingCave){
+      if(millis() - currentTimeActionCouvercle >= delayActionCouvercle){
+        openingCave = !(couv.ouvrir_couvercle(true));
+        currentTimeActionCouvercle = millis();
+      }
+    }
+    //===================LOGIQUE DE FERMETURE AVEC MILLIS==================
+    if(closingCave){
+      if(millis() - currentTimeActionCouvercle >= delayActionCouvercle){
+        closingCave = !(couv.fermer_couvercle(true));
+        currentTimeActionCouvercle = millis();
+      }
+    }
+
+    //==============SEND_VALUES_SENSORS????=============================
+
+    // +++++++++++++++++++ DHT DETECTION D'HUMIDITE ++++++++++++++++++++++++
+
+    // ++++++++++++++++++++++ DETECTION DE TEMPERATURE ++++++++++++++++++++++++      
+    
   }
-  delay(2000); 
+      
+  //delay(2000); 
 }

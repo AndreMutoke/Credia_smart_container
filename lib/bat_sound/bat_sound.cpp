@@ -1,6 +1,6 @@
 #include "bat_sound.hpp"
 
-#define SOUND_VELCITY 0.0343 // 0.0343 centimetre / microseconde
+#define SOUND_VELOCITY 0.0343 // 0.0343 centimetre / microseconde
 #define DIST_LIMIT 3 // c'est 3 centimetres
 
 Bat_Sound::Bat_Sound(int trigger, int echo)
@@ -24,7 +24,7 @@ void Bat_Sound::emit_pulse()
 void Bat_Sound::detect_distance()
 {
     this->duration = pulseIn(this->ECHO_PIN, HIGH);
-    this->distance = (this->duration * SOUND_VELCITY) / 2;
+    this->distance = (this->duration * SOUND_VELOCITY) / 2;
 }
 
 long Bat_Sound::detect_obstacle_distance()
